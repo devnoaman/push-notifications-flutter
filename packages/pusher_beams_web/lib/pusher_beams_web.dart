@@ -2,7 +2,8 @@ import 'dart:async';
 import 'dart:html' as html;
 
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
-import 'package:js/js_util.dart';
+// import 'package:js/js_util.dart';
+import 'dart:js_interop';
 import 'package:pusher_beams_platform_interface/method_channel_pusher_beams.dart';
 import 'package:pusher_beams_platform_interface/pusher_beams_platform_interface.dart';
 import 'package:pusher_beams_web/pusher_beams.dart';
@@ -30,31 +31,47 @@ class PusherBeams extends PusherBeamsPlatform {
   /// Throws [NullRejectionException] or [Exception] in case the JS promise fails.
   @override
   Future<void> addDeviceInterest(String interest) async {
-    await promiseToFuture(_beamsClient!.addDeviceInterest(interest));
+    await (_beamsClient!.addDeviceInterest(interest) as JSPromise).toDart;
+    // await promiseToFuture(_beamsClient!.addDeviceInterest(interest));
   }
 
   /// Clear all the state from [PusherBeams] library, leaving an empty state.
   /// Throws [NullRejectionException] or [Exception] in case the JS promise fails.
   @override
   Future<void> clearAllState() async {
-    await promiseToFuture(_beamsClient!.clearAllState());
+    await (_beamsClient!.clearAllState() as JSPromise).toDart;
+    // await promiseToFuture(_beamsClient!.clearAllState() );
   }
 
   /// Unsubscribes all interests from this device.
   /// Throws [NullRejectionException] or [Exception] in case the JS promise fails.
   @override
   Future<void> clearDeviceInterests() async {
-    await promiseToFuture(_beamsClient!.clearDeviceInterests());
+    await (_beamsClient!.clearDeviceInterests() as JSPromise).toDart;
+    // await promiseToFuture(_beamsClient!.clearDeviceInterests());
   }
 
   /// Get the interests registered in this device. Returns a [List] containing the interests as [String].
   /// Throws [NullRejectionException] or [Exception] in case the JS promise fails.
   @override
   Future<List<String?>> getDeviceInterests() async {
-    final List<dynamic> interests =
-        await promiseToFuture(_beamsClient!.getDeviceInterests());
+    // final List<dynamic> interests =
+    // await promiseToFuture(_beamsClient!.getDeviceInterests());
 
-    return interests.cast<String?>();
+    // return interests.cast<String?>();
+    // final JSAny? result =
+    //     await (_beamsClient!.getDeviceInterests() as JSPromise).toDart;
+
+// 2. Cast the result to a JSArray<JSString>, then convert to a Dart List.
+    // final List<String> interests = (result as JSArray<JSString>).toDart;
+    final JSAny? result =
+        await (_beamsClient!.getDeviceInterests() as JSPromise).toDart;
+    final JSArray<JSString> jsArray = result as JSArray<JSString>;
+
+    // 1. jsArray.toDart -> Returns List<JSString>
+    // 2. .map((s) => s.toDart) -> Converts every JSString item to a Dart String
+    final List<String> interests = jsArray.toDart.map((s) => s.toDart).toList();
+    return interests;
   }
 
   /// This is not implemented on web platform
@@ -68,7 +85,8 @@ class PusherBeams extends PusherBeamsPlatform {
   /// Throws [NullRejectionException] or [Exception] in case the JS promise fails.
   @override
   Future<void> removeDeviceInterest(String interest) async {
-    await promiseToFuture(_beamsClient!.removeDeviceInterest(interest));
+    await (_beamsClient!.removeDeviceInterest(interest) as JSPromise).toDart;
+    // await promiseToFuture(_beamsClient!.removeDeviceInterest(interest));
   }
 
   /// Sets the [interests] provided with a [List].
@@ -76,7 +94,8 @@ class PusherBeams extends PusherBeamsPlatform {
   /// Throws [NullRejectionException] or [Exception] in case the JS promise fails.
   @override
   Future<void> setDeviceInterests(List<String> interests) async {
-    await promiseToFuture(_beamsClient!.setDeviceInterests(interests));
+    await (_beamsClient!.setDeviceInterests(interests) as JSPromise).toDart;
+    // await promiseToFuture(_beamsClient!.setDeviceInterests(interests));
   }
 
   /// Sets authentication for this device, so you can send notifications specifically for this device.
@@ -92,7 +111,8 @@ class PusherBeams extends PusherBeamsPlatform {
           headers: provider.headers,
           credentials: provider.credentials));
 
-      await promiseToFuture(_beamsClient!.setUserId(userId, tokenProvider));
+      await (_beamsClient!.setUserId(userId, tokenProvider) as JSPromise)
+          .toDart;
 
       callback(null);
     } catch (err) {
@@ -119,7 +139,7 @@ class PusherBeams extends PusherBeamsPlatform {
     _beamsClient ??=
         PusherBeamsClient(PusherBeamsClientOptions(instanceId: instanceUuid));
 
-    await promiseToFuture(_beamsClient!.start());
+    await (_beamsClient!.start() as JSPromise).toDart;
   }
 
   /// Stops by deleting all the state, remotely and locally.
@@ -127,7 +147,7 @@ class PusherBeams extends PusherBeamsPlatform {
   /// Throws [NullRejectionException] or [Exception] in case the JS promise fails.
   @override
   Future<void> stop() async {
-    await promiseToFuture(_beamsClient!.stop());
+    await (_beamsClient!.stop() as JSPromise).toDart;
     _beamsClient = null;
   }
 
